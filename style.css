@@ -1,0 +1,64 @@
+body {
+    background-color: #0f172a; /* ڕەنگی پشتەوەی تاریک */
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    overflow: hidden; /* بۆ ئەوەی شتەکان لە لاپەڕەکە نەچنە دەرەوە */
+}
+
+.container {
+    position: relative; /* بۆ ئەوەی شتەکان بە دەوریدا بسوڕێنەوە */
+    text-align: center;
+}
+
+/* نووسینی ئاڵتوونی کە ڕەنگی دەگۆڕێت */
+.gold-text {
+    font-size: 3rem;
+    background: linear-gradient(
+        to right,
+        #b59410, /* ئاڵتوونی تاریک */
+        #ffd700, /* ئاڵتوونی گەش */
+        #b59410  /* دووبارە ئاڵتوونی تاریک */
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text; /* بۆ ئەوەی ڕەنگەکە تەنها لەسەر نووسینەکە بێت */
+    background-clip: text;
+    color: transparent; /* تێکستەکە شەفاف دەکات بۆ ئەوەی ڕەنگی پشتەوەی دەربکەوێت */
+    animation: gold-shift 3s linear infinite; /* جوڵە بۆ ڕەنگەکە */
+}
+
+/* Keyframes بۆ گۆڕینی ڕەنگی ئاڵتوونی */
+@keyframes gold-shift {
+    to {
+        background-position: 200% center;
+    }
+}
+
+/* شتەکان کە دەسوڕێنەوە */
+.orbit-item {
+    font-size: 2rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* بۆ ئەوەی شتەکان لە چەقی تێکستەکە بن */
+}
+
+/* دیاریکردنی شێوازی سوڕانەوە بۆ هەریەک لە شتەکان */
+.item-1 { animation: orbit 5s linear infinite; --orbit-radius: 150px; }
+.item-2 { animation: orbit 7s linear infinite 1s; --orbit-radius: 200px; }
+.item-3 { animation: orbit 9s linear infinite 2s; --orbit-radius: 250px; }
+.item-4 { animation: orbit 11s linear infinite 3s; --orbit-radius: 300px; }
+
+/* Keyframes بۆ سوڕانەوە */
+@keyframes orbit {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg) translateX(var(--orbit-radius));
+    }
+    to {
+        transform: translate(-50%, -50%) rotate(360deg) translateX(var(--orbit-radius));
+    }
+}
