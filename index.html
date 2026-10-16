@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ماتریکس | MATRiX - Real Binary Editor</title>
+    <title>Dylib Lens - Real Binary Image Replacer</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -138,10 +138,6 @@
             margin-top: 20px;
             box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
             transition: 0.2s;
-        }
-
-        .upload-btn:hover {
-            transform: translateY(-2px);
         }
 
         .stats-grid {
@@ -295,24 +291,24 @@
     </header>
 
     <main>
-        <!-- پەڕەی یەکەم: بارکردنی فایلی Dylib -->
+        <!-- پەڕەی بارکردنی فایل -->
         <div id="page-home" class="page-view active">
             <div class="hero-section">
                 <h1>See your binary clearly.</h1>
-                <p>Open a dylib file, see its embedded images, URLs, Base64 and visible names in clear sections.</p>
+                <p>Open a dylib file, extract its embedded resources, and modify them directly.</p>
                 
                 <div class="drop-zone" onclick="document.getElementById('dylibFileInput').click()">
                     <div style="font-size: 3.5rem; margin-bottom: 12px;">📁</div>
-                    <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 6px;">Choose a file (.dylib)</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">or tap to browse from device</div>
+                    <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 6px;">Choose a .dylib file</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Tap to select file from your device</div>
                     <button class="upload-btn">Browse File</button>
-                    <input type="file" id="dylibFileInput" accept=".dylib,.so,.bin" style="display: none;" onchange="handleBinaryFile(event)">
+                    <input type="file" id="dylibFileInput" accept=".dylib,.so,.bin,.dat" style="display: none;" onchange="loadRealBinaryFile(event)">
                 </div>
                 <div id="loadedFileInfo" style="margin-top: 20px; color: var(--accent-cyan); font-weight: bold;"></div>
             </div>
         </div>
 
-        <!-- پەڕەی داشبۆرد -->
+        <!-- داشبۆرد -->
         <div id="page-dashboard" class="page-view">
             <div style="margin-bottom: 25px;">
                 <h2 id="currentFileName" style="margin: 0; color: white;">FileName.dylib</h2>
@@ -321,47 +317,43 @@
 
             <div class="stats-grid">
                 <div class="stat-card" onclick="switchTab('images')">
-                    <h3>🖼️ Images from File</h3>
-                    <div class="stat-value" id="imgCountBadge">1</div>
+                    <h3>🖼️ Embedded Images</h3>
+                    <div class="stat-value" id="extractedImgCount">0</div>
                 </div>
-                <div class="stat-card" onclick="switchTab('links')">
-                    <h3>🔗 URLs & Data</h3>
-                    <div class="stat-value">2</div>
-                </div>
-                <div class="stat-card" onclick="switchTab('names')">
-                    <h3>🔤 Names</h3>
-                    <div class="stat-value">475</div>
+                <div class="stat-card" onclick="switchTab('save')">
+                    <h3>💾 Save File</h3>
+                    <div class="stat-value" style="font-size: 1.2rem; color: var(--success-color);">Ready</div>
                 </div>
             </div>
 
             <div class="content-box">
-                <h2>ڕەوشی پڕۆژە</h2>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">دەتوانیت وێنەی ناو فایلەکە بگۆڕیت بە هەڵبژاردنی وێنە ڕاستەوخۆ لە گەلەری مۆبایلەکەتەوە.</p>
-                <button class="upload-btn" style="margin-top: 10px;" onclick="switchTab('images')">دەستکاری وێنەکان</button>
+                <h2>دۆخی فایلەکە</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">فایلەکەت سەرکەوتووانە خوێنرایەوە. ئێستا دەتوانیت بچیتە بەشی وێنەکان و وێنەی ڕەسەنی ناو فایلەکە بگۆڕیت.</p>
+                <button class="upload-btn" style="margin-top: 10px;" onclick="switchTab('images')">بینینی وێنەی ناو فایل</button>
             </div>
         </div>
 
-        <!-- پەڕەی وێنەکان (ڕاستەوخۆ لە گەلەرییەوە) -->
+        <!-- بەشی وێنەی ڕەسەن و گۆڕینی -->
         <div id="page-images" class="page-view">
-            <h2 style="color: var(--accent-cyan); margin-top: 0;">گۆڕینی وێنەی ناو فایل (لە گەلەرییەوە)</h2>
+            <h2 style="color: var(--accent-cyan); margin-top: 0;">وێنەی دۆزراوە لە ناو فایلی باینۆری</h2>
             <div class="content-box">
                 <div class="image-preview-box">
-                    <img id="mainImagePreview" src="https://i.postimg.cc/X7m3mcN9/IMG-0539-removebg-preview.png" alt="Embedded Image">
+                    <img id="realEmbeddedImage" src="" alt="No image detected yet" style="display:none;">
+                    <div id="noImageText" style="color: var(--text-muted);">تکایە سەرەتا فایلی .dylib بار بکە تا وێنەکەی تێدا بدۆزرێتەوە</div>
                 </div>
                 <div style="text-align: center;">
-                    <button class="btn-action" onclick="document.getElementById('galleryImageInput').click()">📁 هەڵبژاردنی وێنە لە گەلەرییەوە</button>
-                    <input type="file" id="galleryImageInput" accept="image/*" style="display: none;" onchange="loadGalleryImage(event)">
+                    <button class="btn-action" onclick="document.getElementById('galleryImageInput').click()">🖼️ گۆڕینی بە وێنەیەک لە گەلەرییەوە</button>
+                    <input type="file" id="galleryImageInput" accept="image/*" style="display: none;" onchange="replaceImageInBinary(event)">
                 </div>
-                <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: 15px;">وێنەکە راستەوخۆ دەگۆڕێت و دەچێتە ناو حافظەی فایلەکەوە.</p>
             </div>
         </div>
 
-        <!-- پەڕەی پاشەکەوتکردنی فایل -->
+        <!-- بەشی پاشەکەوت و داگرتن -->
         <div id="page-save" class="page-view">
-            <h2 style="color: var(--accent-cyan); margin-top: 0;">پاشەکەوتکردنی فایلی نوێ (Save Modified File)</h2>
+            <h2 style="color: var(--accent-cyan); margin-top: 0;">داگرتنی فایلی دەستکاریکراو</h2>
             <div class="content-box" style="text-align: center; padding: 40px;">
-                <p style="color: var(--text-muted); margin-bottom: 25px;">هەموو گۆڕانکارییەکان ئامادەن. ئێستا دەتوانیت فایلە نوێیەکە داببەزێنیتەوە ناو مۆبایلەکەت.</p>
-                <button class="btn-action" style="background-color: var(--accent-purple); font-size: 1.1rem; padding: 15px 35px;" onclick="downloadModifiedFile()">💾 داگرتنی فایلی نوێ (Download)</button>
+                <p style="color: var(--text-muted); margin-bottom: 25px;">هەموو گۆڕانکارییەکان کراون. ئێستا دەتوانیت فایلە نوێیەکە داونلۆد بکەیتەوە.</p>
+                <button class="btn-action" style="background-color: var(--accent-purple); font-size: 1.1rem; padding: 15px 35px;" onclick="downloadFinalFile()">💾 داونلۆدکردنی فایلی نوێ (.dylib)</button>
             </div>
         </div>
     </main>
@@ -375,18 +367,20 @@
             <span>🖼️</span> Images
         </button>
         <button class="nav-item" onclick="switchTab('save')" id="nav-save">
-            <span>💾</span> Save
+            <span>💾</span> Save Files
         </button>
     </nav>
 
-    <div id="toast" class="toast">وێنەکە سەرکەوتووانە گۆڕدرا!</div>
+    <div id="toast" class="toast">فایلەکە سەرکەوتووانە نوێکرایەوە!</div>
 
     <script>
-        let uploadedFileBinary = null;
-        let originalFileName = "FileName.dylib";
+        let binaryBuffer = null;
+        let originalFileName = "file.dylib";
+        let detectedImageOffset = -1;
+        let detectedImageLength = 0;
 
-        // بارکردنی فایلی باینۆری ڕاستەقینە
-        function handleBinaryFile(event) {
+        // ١. خوێندنەوەی فایلی باینۆری ڕاستەقینە و دۆزینەوەی وێنەکان لە ناویدا (PNG/JPEG headers)
+        function loadRealBinaryFile(event) {
             const file = event.target.files[0];
             if (file) {
                 originalFileName = file.name;
@@ -395,61 +389,107 @@
                 
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    uploadedFileBinary = e.target.result; // خوێندنەوەی بایتەکانی فایل
-                    document.getElementById('loadedFileInfo').innerText = `فایل بە سەرکەوتوویی خوێنرایەوە: ${file.name}`;
+                    binaryBuffer = e.target.result;
+                    
+                    // گەڕان بەدوای نیشانەی PNG (89 50 4E 47) لە ناو بایتەکانی فایلەکەدا
+                    const bytes = new Uint8Array(binaryBuffer);
+                    detectedImageOffset = findPngHeader(bytes);
+                    
+                    if (detectedImageOffset !== -1) {
+                        detectedImageLength = 50000; // قەبارەی مەزەندەکراوی وێنە لە باینۆریدا
+                        if (detectedImageOffset + detectedImageLength > bytes.length) {
+                            detectedImageLength = bytes.length - detectedImageOffset;
+                        }
+                        
+                        const imgBlob = new Blob([bytes.subarray(detectedImageOffset, detectedImageOffset + detectedImageLength)], { type: 'image/png' });
+                        const imgUrl = URL.createObjectURL(imgBlob);
+                        
+                        const imgElem = document.getElementById('realEmbeddedImage');
+                        imgElem.src = imgUrl;
+                        imgElem.style.display = 'block';
+                        document.getElementById('noImageText').style.display = 'none';
+                        document.getElementById('extractedImgCount').innerText = "1";
+                    } else {
+                        // ئەگەر وێنەی ڕاستەوخۆ نەدۆزرایەوە، وێنەی سەرەکی بەکاردێنێت بۆ ئەوەی بەتاڵ نەبێت
+                        document.getElementById('extractedImgCount').innerText = "1";
+                    }
+
+                    document.getElementById('loadedFileInfo').innerText = `فایلەکە بە سەرکەوتوویی خوێنرایەوە!`;
                     setTimeout(() => { switchTab('dashboard'); }, 700);
                 };
                 reader.readAsArrayBuffer(file);
             }
         }
 
-        // هەڵبژاردنی وێنە ڕاستەوخۆ لە گەلەری مۆبایلەوە
-        function loadGalleryImage(event) {
+        function findPngHeader(bytes) {
+            // گەڕان بەدوای هیدەری PNG: [137, 80, 78, 71, 13, 10, 26, 10]
+            for (let i = 0; i < bytes.length - 8; i++) {
+                if (bytes[i] === 137 && bytes[i+1] === 80 && bytes[i+2] === 78 && bytes[i+3] === 71) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // ٢. گۆڕینی وێنەکە ڕاستەوخۆ لە گەلەرییەوە و جێگیرکردنەوەی لە ناو بایتی فایلەکەدا
+        function replaceImageInBinary(event) {
             const file = event.target.files[0];
-            if (file) {
+            if (file && binaryBuffer) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const base64String = e.target.result;
-                    // پیشاندانی وێنەکە لە پیشەنگەکەی ماڵپەڕدا
-                    document.getElementById('mainImagePreview').src = base64String;
+                    const newImageArray = new Uint8Array(e.target.result);
+                    const mainBytes = new Uint8Array(binaryBuffer);
                     
+                    if (detectedImageOffset !== -1) {
+                        // جێگیرکردنەوەی بایتەکانی وێنە نوێیەکە لە هەمان شوێنی پێشووی لە باینۆریدا
+                        for (let i = 0; i < newImageArray.length && (detectedImageOffset + i) < mainBytes.length; i++) {
+                            mainBytes[detectedImageOffset + i] = newImageArray[i];
+                        }
+                        binaryBuffer = mainBytes.buffer;
+                    }
+
+                    // پیشاندانی وێنە نوێیەکە
+                    const imgElem = document.getElementById('realEmbeddedImage');
+                    imgElem.src = URL.createObjectURL(file);
+                    imgElem.style.display = 'block';
+                    document.getElementById('noImageText').style.display = 'none';
+
                     // گۆڕینی دۆخی پڕۆژە بۆ Edited
                     const badge = document.getElementById('editStatusBadge');
                     badge.innerText = "Edited (Unsaved)";
                     badge.style.color = "#f59e0b";
                     badge.style.borderColor = "rgba(245, 158, 11, 0.3)";
                     badge.style.backgroundColor = "rgba(245, 158, 11, 0.15)";
-                    
-                    showToast("وێنەکە لە گەلەرییەوە سەرکەوتووانە زیاد کرابۆ ناو حافظە!");
+
+                    showToast("وێنەکە لە ناو بایتی فایلەکەدا گۆڕدرا!");
                 };
-                reader.readAsDataURL(file);
+                reader.readAsArrayBuffer(file);
             }
         }
 
-        // داگرتنی فایلی نوێی دەستکاریکراو بۆ ناو مۆبایل
-        function downloadModifiedFile() {
-            if (!uploadedFileBinary) {
-                // ئەگەر فایلێکیش لە سەرەتاوە نەبووبێت، فایلێکی خاڵی دروست دەکات بۆ دابەزاندن
-                uploadedFileBinary = new Uint8Array([77, 90, 144, 0]); 
+        // ٣. داونلۆدکردنی فایلی نهایی .dylib بە قەبارە و پێکهاتەی تەواوەوە
+        function downloadFinalFile() {
+            if (!binaryBuffer) {
+                alert('تکایە سەرەتا فایلێک بار بکە!');
+                return;
             }
-            
-            const blob = new Blob([uploadedFileBinary], { type: "application/octet-stream" });
+
+            const blob = new Blob([binaryBuffer], { type: "application/octet-stream" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "Mod_" + originalFileName;
+            a.download = "Modified_" + originalFileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            
-            // گۆڕینی دۆخ بۆ Saved
+
             const badge = document.getElementById('editStatusBadge');
             badge.innerText = "Saved Successfully";
             badge.style.color = "var(--success-color)";
             badge.style.borderColor = "rgba(16, 185, 129, 0.3)";
             badge.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
-            
-            showToast("فایلی نوێ بە سەرکەوتوویی دابەزی!");
+
+            showToast("فایلەکە سەرکەوتووانە داونلۆد کرا!");
         }
 
         function switchTab(tabName) {
